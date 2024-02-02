@@ -3,7 +3,11 @@ const ERRORS = {
         
     ],
     "logic": [
-        "More than 1 entry point detected"
+        "More than 1 entry point detected",
+        "Following the '+' operator, expected a value of type 'int', 'flt', or 'bol'",
+        "Following the '-' operator, expected a value of type 'int', 'flt', or 'bol'",
+        "Following the '/' operator, expected a value of type 'int', 'flt', or 'bol'",
+        "Following the '*' operator, expected a value of type 'int', 'flt', or 'bol'",
     ],
     "runtime": [
         
@@ -15,21 +19,24 @@ const SUPPORT = {
 
     ],
     "logic": [
-        "The function 'main' is a special function, that cannot be defined multiple times.\n  Consider removing one of your main functions, or possibly merging them?"
+        "The function 'main' is a special function, that cannot be defined multiple times.\n  Consider removing one of your main functions, or possibly merging them?",
+        "The '+' operator can only be used to add number based values, if you are looking to join two values of 'str', consider the 'join()' function",
+        "The '/' operator can only be used to divide two number based values",
+        "The '*' operator can only be used to multiply two number based values",
     ],
     "runtime": [
 
     ]
 }
 
-class Range {
+export class Range {
     constructor(start, end) {
         this.start = start;
         this.end = end;
     }
 }
 
-function build_error(strs, line, type, code, filepath, lncount, range) {
+export function build_error(strs, line, type, code, filepath, lncount, range) {
     let header = "[errors::" + type + "::" + code.toString().padStart(3, "0") + "]";
         
     let pad = Math.round((36 - header.length) / 2);

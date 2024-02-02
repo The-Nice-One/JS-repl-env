@@ -1,0 +1,7 @@
+{
+    "name":"js_repl_env",
+    "author":"The-Nice-One",
+    "version": "0.0.1",
+    "main":"exp_parser_test.js",
+    "type":"module"
+}
