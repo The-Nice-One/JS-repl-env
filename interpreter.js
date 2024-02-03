@@ -33,7 +33,7 @@ const ERRORS = {
     ]
 }
 
-const FUNS = {
+export const FUNS = {
     "terminal": {
         "write": function (session, arg) {
             
@@ -130,7 +130,7 @@ function build_error(strs, line, type, code, filepath, lncount) {
     return header + "\n" + message + "\n" + preview;
 }
 
-class jsSession {
+export class jsSession {
     constructor(code, filename) {
         this.code = code;
         this.filename = filename;

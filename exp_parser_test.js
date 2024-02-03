@@ -1,4 +1,5 @@
 import { build_error, Range } from "./universal_error_system.js";
+import { FUNS, jsSession } from "./interpreter.js"
 
 
 const exp = ["3", " ", "+", " ", "-", "2"];
@@ -118,18 +119,37 @@ function parse_expression(args) {
 }
 
 let result = parse_expression(exp);
+var session = new jsSession("", "main.azl");
 
 if (result[0] == FAILED) {
     for(var i = 0; i < result[1].length; i++) {
         console.log(result[1][i]);
     }
 } else {
-    compile_expression(result[1])
+    compile_expression(result[1]);
 }
+
+
 
 function compile_expression(slices) {
     console.log(slices);
-    // slices
+    let cells = [];
+    
+    let types = [];
+
+    for(var i = 0; i < slices.length; i++) {
+        let slice = slices[i];
+        if (slice.type == NEGATIVE_SIGN) {
+            if (slices[i+1].type == INTEGER) {
+                cells.push(FUNS["arithmetic"]["integer_multiply"].bind(this, session, [-1, Number(slices[i+1].slice), "ok", false]));
+            } else {
+                // throw error: expected int found x
+            }
+        }
+    }
+    console.log(cells);
+    cells[0]();
+    console.log(session);
 }
 
 
