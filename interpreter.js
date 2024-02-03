@@ -38,6 +38,30 @@ const FUNS = {
         "write": function (session, arg) {
             
         } 
+    },
+    "arithmetic": {
+        "integer_add": function (session, args) {
+            /*
+            Args:
+            0: int1,
+            1: int2,
+            2: location,
+            3: pass? true or false (not working yet)
+            */
+
+            session.gRegister[args[2]] = args[0] + args[1];
+        },
+        "integer_multiply": function (session, args) {
+            /*
+            Args:
+            0: int1,
+            1: int2,
+            2: location,
+            3: pass? true or false (not working yet)
+            */
+
+            session.gRegister[args[2]] = args[0] * args[1];
+        },
     }
 }
 

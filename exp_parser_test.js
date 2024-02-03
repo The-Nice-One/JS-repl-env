@@ -4,7 +4,7 @@ import { build_error, Range } from "./universal_error_system.js";
 const exp = ["3", " ", "+", " ", "-", "2"];
 const OPERATORS = ["+", "-", "*", "/"];
 
-
+const NEGATIVE_SIGN = 6;
 const PARENTHESIS = 5;
 const OPERATOR = 4;
 const INTEGER = 3;
@@ -53,23 +53,30 @@ function parse_expression(args) {
             next_types.push(WHITESPACE);
 
         } else if (OPERATORS.includes(slice)) {
-
-            
-            temporially_slice = new Slice(
-                OPERATOR,
-                slice,
-                CONFIG_USE
-            );
+            if (expected_types.includes(NEGATIVE_SIGN) && slice == "-") {
+                temporially_slice = new Slice(
+                    NEGATIVE_SIGN,
+                    slice,
+                    CONFIG_USE
+                )
+            } else {
+                temporially_slice = new Slice(
+                    OPERATOR,
+                    slice,
+                    CONFIG_USE
+                );
+            }
 
             next_types.push(INTEGER);
             next_types.push(WHITESPACE);
+            next_types.push(NEGATIVE_SIGN)
         } else if (slice == " ") {
             temporially_slice = new Slice(
                 WHITESPACE,
                 slice,
                 CONFIG_IGNORE
             )
-            console.log(expected_types)
+            //console.log(expected_types)
         }
 
 
@@ -111,16 +118,17 @@ function parse_expression(args) {
 }
 
 let result = parse_expression(exp);
-console.log(result);
 
 if (result[0] == FAILED) {
     for(var i = 0; i < result[1].length; i++) {
         console.log(result[1][i]);
     }
+} else {
+    compile_expression(result[1])
 }
 
 function compile_expression(slices) {
-
+    console.log(slices);
     // slices
 }
 
