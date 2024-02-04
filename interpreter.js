@@ -34,24 +34,30 @@ const ERRORS = {
 }
 
 export const FUNS = {
+    "core": {
+        "goto": function (session, oargs, locs, pass) {
+
+        }
+    },
     "terminal": {
-        "write": function (session, arg) {
+        "write": function (session, oargs, locs, pass) {
             
         } 
     },
     "arithmetic": {
-        "integer_add": function (session, args) {
+        "integer_add": function (session, oargs, locs, pass) {
             /*
             Args:
             0: int1,
             1: int2,
             2: location,
-            3: pass? true or false (not working yet)
             */
-
-            session.gRegister[args[2]] = args[0] + args[1];
+            let args = bundle_args(session, oargs, locs);
+            let result = args[0] + args[1];
+            session.gRegister[args[2]] = result;
+            if (pass === true) {session.cRegister.push(result);}
         },
-        "integer_multiply": function (session, args) {
+        "integer_multiply": function (session, oargs, locs, pass) {
             /*
             Args:
             0: int1,
@@ -59,11 +65,42 @@ export const FUNS = {
             2: location,
             3: pass? true or false (not working yet)
             */
-
-            session.gRegister[args[2]] = args[0] * args[1];
+            let args = bundle_args(session, oargs, locs);
+            let result = args[0] * args[1];
+            session.gRegister[args[2]] = result;
+            console.log(args)
+            if (pass === true) {session.cRegister.push(result);}
         },
     }
 }
+
+
+
+export const ARG_PASSED = 1; // arg is in the special cosumable register
+export const ARG_GIVEN = 2; // arg is given directly
+export const ARG_LOCATED = 3;// arg location in the global register is given
+
+
+function bundle_args(session, args, locs) {
+    let cargs = [];
+    for(var i = 0; i < locs.length; i++) {
+        if (locs[i] == ARG_PASSED) {
+            cargs.push(session.cRegister[args[i]]);
+            session.cRegister.splice(args[i],1);
+        }
+        if (locs[i] == ARG_GIVEN) {
+            cargs.push(args[i]);
+        }
+        if (locs[i] == ARG_LOCATED) {
+            cargs.push(session.gRegister[args[i]]);
+        }
+    }
+    return cargs;
+}
+
+
+
+
 
 function sparse(code) {
     let strs = code.split("\n");
@@ -135,6 +172,7 @@ export class jsSession {
         this.code = code;
         this.filename = filename;
         this.gRegister = [];
+        this.cRegister = [];
     }
 
     initialize() {

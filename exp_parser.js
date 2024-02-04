@@ -1,10 +1,10 @@
 import { build_error, Range } from "./universal_error_system.js";
-import { FUNS, jsSession } from "./interpreter.js"
+import { FUNS, jsSession, ARG_GIVEN, ARG_PASSED, ARG_LOCATED } from "./interpreter.js"
 
 
 const exp = ["3", " ", "+", " ", "-", "2"];
 const OPERATORS = ["+", "-", "*", "/"];
-
+const COMPILED_EXPRESSION = 12;
 const NEGATIVE_SIGN = 6;
 const PARENTHESIS = 5;
 const OPERATOR = 4;
@@ -70,7 +70,7 @@ function parse_expression(args) {
 
             next_types.push(INTEGER);
             next_types.push(WHITESPACE);
-            next_types.push(NEGATIVE_SIGN)
+            next_types.push(NEGATIVE_SIGN);
         } else if (slice == " ") {
             temporially_slice = new Slice(
                 WHITESPACE,
@@ -106,7 +106,7 @@ function parse_expression(args) {
                     32,
                     new Range(12,14)
                 )
-            )
+            );
         }
         
         
@@ -134,19 +134,35 @@ if (result[0] == FAILED) {
 function compile_expression(slices) {
     console.log(slices);
     let cells = [];
-    
-    let types = [];
+    let current_cres_pos = 0;
 
     for(var i = 0; i < slices.length; i++) {
         let slice = slices[i];
         if (slice.type == NEGATIVE_SIGN) {
             if (slices[i+1].type == INTEGER) {
-                cells.push(FUNS["arithmetic"]["integer_multiply"].bind(this, session, [-1, Number(slices[i+1].slice), "ok", false]));
+                cells.push(FUNS["arithmetic"]["integer_multiply"].bind(this, session, [-1, Number(slices[i+1].slice), NaN], [ARG_GIVEN, ARG_GIVEN, ARG_GIVEN], true));
+                slices.splice(i+1,1);
+                slices[i] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
+                current_cres_pos++;
             } else {
                 // throw error: expected int found x
             }
         }
     }
+    for(var j = 0; j < slices.length; j++) {
+        let slice = slices[i];
+        if (slice.type == OPERATOR) {
+            if(slice.slice = "+") {
+                let val1 = null;
+                if(slices[i-1].type == COMPILED_EXPRESSION) {
+                    
+                } else if(slices[i-1].type == Number) {
+
+                }
+            }
+        }
+    }
+    console.log(slices);
     console.log(cells);
     cells[0]();
     console.log(session);
