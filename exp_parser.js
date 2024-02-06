@@ -150,22 +150,50 @@ function compile_expression(slices) {
         }
     }
     for(var j = 0; j < slices.length; j++) {
-        let slice = slices[i];
+        let slice = slices[j];
         if (slice.type == OPERATOR) {
             if(slice.slice = "+") {
-                let val1 = null;
-                if(slices[i-1].type == COMPILED_EXPRESSION) {
-                    
-                } else if(slices[i-1].type == Number) {
-
+                let val1 = {"locs":NaN, "slice":NaN};
+                if(slices[j-1].type == COMPILED_EXPRESSION) {
+                    val1.locs = ARG_PASSED;
+                    val1.slice = slices[j-1].slice;
+                } else if(slices[j-1].type == INTEGER) {
+                    console.log("ye number")
+                    val1.locs = ARG_GIVEN;
+                    val1.slice = slices[j-1].slice;
                 }
+                
+                let val2 = {"locs":NaN, "slice":NaN};
+                if(slices[j+1].type == COMPILED_EXPRESSION) {
+                    val2.locs = ARG_PASSED;
+                    val2.slice = slices[j+1].slice;
+                } else if(slices[j+1].type == INTEGER) {
+                    console.log("ye number")
+                    val2.locs = ARG_GIVEN;
+                    val2.slice = slices[j+1].slice;
+                }
+
+                cells.push(
+                    FUNS["arithmetic"]["integer_add"].bind(
+                        this,
+                        session,
+                        [val1.slice, val2.slice, NaN],
+                        [val1.locs, val2.locs, ARG_GIVEN],
+                        true
+                    )
+                )
+
+                console.log(val2)
+
             }
         }
     }
     console.log(slices);
     console.log(cells);
     cells[0]();
+    cells[1]();
     console.log(session);
+    
 }
 
 

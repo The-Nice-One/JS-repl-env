@@ -54,6 +54,9 @@ export const FUNS = {
             */
             let args = bundle_args(session, oargs, locs);
             let result = args[0] + args[1];
+            console.log(oargs)
+            console.log(args)
+            console.log(result)
             session.gRegister[args[2]] = result;
             if (pass === true) {session.cRegister.push(result);}
         },
