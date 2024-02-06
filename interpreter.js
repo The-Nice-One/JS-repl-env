@@ -54,9 +54,6 @@ export const FUNS = {
             */
             let args = bundle_args(session, oargs, locs);
             let result = args[0] + args[1];
-            console.log(oargs)
-            console.log(args)
-            console.log(result)
             session.gRegister[args[2]] = result;
             if (pass === true) {session.cRegister.push(result);}
         },
@@ -71,7 +68,31 @@ export const FUNS = {
             let args = bundle_args(session, oargs, locs);
             let result = args[0] * args[1];
             session.gRegister[args[2]] = result;
-            console.log(args)
+            if (pass === true) {session.cRegister.push(result);}
+        },
+        "integer_subtract": function (session, oargs, locs, pass) {
+            /*
+            Args:
+            0: int1,
+            1: int2,
+            2: location,
+            */
+            let args = bundle_args(session, oargs, locs);
+            let result = args[0] - args[1];
+            session.gRegister[args[2]] = result;
+            if (pass === true) {session.cRegister.push(result);}
+        },
+        "integer_divide": function (session, oargs, locs, pass) {
+            /*
+            Args:
+            0: int1,
+            1: int2,
+            2: location,
+            3: pass? true or false (not working yet)
+            */
+            let args = bundle_args(session, oargs, locs);
+            let result = args[0] / args[1];
+            session.gRegister[args[2]] = result;
             if (pass === true) {session.cRegister.push(result);}
         },
     }

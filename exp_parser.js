@@ -2,10 +2,12 @@ import { build_error, Range } from "./universal_error_system.js";
 import { FUNS, jsSession, ARG_GIVEN, ARG_PASSED, ARG_LOCATED } from "./interpreter.js"
 
 
-const exp = ["3", " ", "+", " ", "-", "2"];
+const exp = ["12", " ", "+", " ", " ", "2", "-", "2"];
 const OPERATORS = ["+", "-", "*", "/"];
 const COMPILED_EXPRESSION = 12;
-const NEGATIVE_SIGN = 6;
+const NEGATIVE_SIGN = 10;
+const TRANSLATE_OPERATOR = 9;
+const SCALE_OPERATOR = 8;
 const PARENTHESIS = 5;
 const OPERATOR = 4;
 const INTEGER = 3;
@@ -50,7 +52,8 @@ function parse_expression(args) {
                 CONFIG_USE
             );
 
-            next_types.push(OPERATOR);
+            next_types.push(TRANSLATE_OPERATOR);
+            next_types.push(SCALE_OPERATOR);
             next_types.push(WHITESPACE);
 
         } else if (OPERATORS.includes(slice)) {
@@ -61,11 +64,21 @@ function parse_expression(args) {
                     CONFIG_USE
                 )
             } else {
-                temporially_slice = new Slice(
-                    OPERATOR,
-                    slice,
-                    CONFIG_USE
-                );
+                if(slice=="+"||slice=="-") {
+                    temporially_slice = new Slice(
+                        TRANSLATE_OPERATOR,
+                        slice,
+                        CONFIG_USE
+                    );
+                }
+                if(slice=="*"||slice=="/") {
+                    temporially_slice = new Slice(
+                        SCALE_OPERATOR,
+                        slice,
+                        CONFIG_USE
+                    );
+                }
+                
             }
 
             next_types.push(INTEGER);
@@ -119,6 +132,7 @@ function parse_expression(args) {
 }
 
 let result = parse_expression(exp);
+console.log(result);
 var session = new jsSession("", "main.azl");
 
 if (result[0] == FAILED) {
@@ -126,13 +140,17 @@ if (result[0] == FAILED) {
         console.log(result[1][i]);
     }
 } else {
-    compile_expression(result[1]);
+    var rtcells = compile_expression(result[1]);
 }
 
+for(var r=0; r<rtcells.length;r++) {
+    rtcells[r]();
+}
 
+console.log(session);
+console.log(rtcells);
 
 function compile_expression(slices) {
-    console.log(slices);
     let cells = [];
     let current_cres_pos = 0;
 
@@ -141,59 +159,101 @@ function compile_expression(slices) {
         if (slice.type == NEGATIVE_SIGN) {
             if (slices[i+1].type == INTEGER) {
                 cells.push(FUNS["arithmetic"]["integer_multiply"].bind(this, session, [-1, Number(slices[i+1].slice), NaN], [ARG_GIVEN, ARG_GIVEN, ARG_GIVEN], true));
-                slices.splice(i+1,1);
                 slices[i] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
-                current_cres_pos++;
+                slices.splice(i+1,1);
+                
+                //current_cres_pos++;
             } else {
                 // throw error: expected int found x
             }
         }
     }
-    for(var j = 0; j < slices.length; j++) {
-        let slice = slices[j];
-        if (slice.type == OPERATOR) {
-            if(slice.slice = "+") {
-                let val1 = {"locs":NaN, "slice":NaN};
-                if(slices[j-1].type == COMPILED_EXPRESSION) {
-                    val1.locs = ARG_PASSED;
-                    val1.slice = slices[j-1].slice;
-                } else if(slices[j-1].type == INTEGER) {
-                    console.log("ye number")
-                    val1.locs = ARG_GIVEN;
-                    val1.slice = slices[j-1].slice;
-                }
-                
-                let val2 = {"locs":NaN, "slice":NaN};
-                if(slices[j+1].type == COMPILED_EXPRESSION) {
-                    val2.locs = ARG_PASSED;
-                    val2.slice = slices[j+1].slice;
-                } else if(slices[j+1].type == INTEGER) {
-                    console.log("ye number")
-                    val2.locs = ARG_GIVEN;
-                    val2.slice = slices[j+1].slice;
-                }
+    for(var k = 0; j < slices.length; k++) {
+        let slice = slices[k];
+        if (slice.type == SCALE_OPERATOR) {
 
-                cells.push(
-                    FUNS["arithmetic"]["integer_add"].bind(
-                        this,
-                        session,
-                        [val1.slice, val2.slice, NaN],
-                        [val1.locs, val2.locs, ARG_GIVEN],
-                        true
-                    )
-                )
+            let func_name = NaN;
+            if(slice.slice=="*") { func_name = "integer_multiply"; }
+            if(slice.slice=="/") { func_name = "integer_divide"; }
 
-                console.log(val2)
 
+            let val1 = {"locs":NaN, "slice":NaN};
+            if(slices[k-1].type == COMPILED_EXPRESSION) {
+                val1.locs = ARG_PASSED;
+                val1.slice = slices[k-1].slice;
+            } else if(slices[k-1].type == INTEGER) {
+                val1.locs = ARG_GIVEN;
+                val1.slice = slices[k-1].slice;
             }
+            
+            let val2 = {"locs":NaN, "slice":NaN};
+            if(slices[k+1].type == COMPILED_EXPRESSION) {
+                val2.locs = ARG_PASSED;
+                val2.slice = slices[k+1].slice;
+            } else if(slices[k+1].type == INTEGER) {
+                val2.locs = ARG_GIVEN;
+                val2.slice = slices[k+1].slice;
+            }
+
+            cells.push(
+                FUNS["arithmetic"][func_name].bind(
+                    this,
+                    session,
+                    [val1.slice, val2.slice, NaN],
+                    [val1.locs, val2.locs, ARG_GIVEN],
+                    true
+                )
+            )
+            slices[k+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
+            slices.splice(k-1,2);
+                
         }
     }
-    console.log(slices);
-    console.log(cells);
-    cells[0]();
-    cells[1]();
-    console.log(session);
-    
+    for(var j = 0; j < slices.length; j++) {
+        let slice = slices[j];
+        if (slice.type == TRANSLATE_OPERATOR) {
+
+            let func_name = NaN;
+            if(slice.slice=="+") { func_name = "integer_add"; }
+            if(slice.slice=="-") { func_name = "integer_subtract"; }
+
+
+            let val1 = {"locs":NaN, "slice":NaN};
+            if(slices[j-1].type == COMPILED_EXPRESSION) {
+                val1.locs = ARG_PASSED;
+                val1.slice = slices[j-1].slice;
+            } else if(slices[j-1].type == INTEGER) {
+                
+                val1.locs = ARG_GIVEN;
+                val1.slice = slices[j-1].slice;
+            }
+            
+            let val2 = {"locs":NaN, "slice":NaN};
+            if(slices[j+1].type == COMPILED_EXPRESSION) {
+                val2.locs = ARG_PASSED;
+                val2.slice = slices[j+1].slice;
+            } else if(slices[j+1].type == INTEGER) {
+                
+                val2.locs = ARG_GIVEN;
+                val2.slice = slices[j+1].slice;
+            }
+
+            cells.push(
+                FUNS["arithmetic"][func_name].bind(
+                    this,
+                    session,
+                    [val1.slice, val2.slice, NaN],
+                    [val1.locs, val2.locs, ARG_GIVEN],
+                    true
+                )
+            )
+            slices[j+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
+            slices.splice(j-1,2);
+                
+        }
+    }
+
+    return cells;
 }
 
 
