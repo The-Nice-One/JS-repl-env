@@ -1,8 +1,8 @@
 import { build_error, Range } from "./universal_error_system.js";
-import { FUNS, jsSession, ARG_GIVEN, ARG_PASSED, ARG_LOCATED } from "./interpreter.js"
+import { FUNS, jsSession, ARG_GIVEN, ARG_PASSED, ARG_LOCATED } from "./interpreter.js";
 
 
-const exp = ["12", " ", "+", " ", " ", "2", "-", "2"];
+const exp = ["12", " ", "+", " ", " ", "2", "-", "2", "-", "5", "+", "33", "*", "2", "/", "3"];
 const OPERATORS = ["+", "-", "*", "/"];
 const COMPILED_EXPRESSION = 12;
 const NEGATIVE_SIGN = 10;
@@ -78,12 +78,12 @@ function parse_expression(args) {
                         CONFIG_USE
                     );
                 }
-                
+                next_types.push(NEGATIVE_SIGN);
             }
 
             next_types.push(INTEGER);
             next_types.push(WHITESPACE);
-            next_types.push(NEGATIVE_SIGN);
+            
         } else if (slice == " ") {
             temporially_slice = new Slice(
                 WHITESPACE,
@@ -161,17 +161,19 @@ function compile_expression(slices) {
                 cells.push(FUNS["arithmetic"]["integer_multiply"].bind(this, session, [-1, Number(slices[i+1].slice), NaN], [ARG_GIVEN, ARG_GIVEN, ARG_GIVEN], true));
                 slices[i] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
                 slices.splice(i+1,1);
-                
+                i--;
                 //current_cres_pos++;
             } else {
                 // throw error: expected int found x
             }
         }
     }
-    for(var k = 0; j < slices.length; k++) {
+
+
+    for(var k = 0; k < slices.length; k++) {
         let slice = slices[k];
         if (slice.type == SCALE_OPERATOR) {
-
+            console.log("ye")
             let func_name = NaN;
             if(slice.slice=="*") { func_name = "integer_multiply"; }
             if(slice.slice=="/") { func_name = "integer_divide"; }
@@ -206,7 +208,9 @@ function compile_expression(slices) {
             )
             slices[k+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
             slices.splice(k-1,2);
-                
+            k--;
+            k--;
+            console.log(k)
         }
     }
     for(var j = 0; j < slices.length; j++) {
@@ -249,7 +253,8 @@ function compile_expression(slices) {
             )
             slices[j+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
             slices.splice(j-1,2);
-                
+            j--;
+            j--;
         }
     }
 
