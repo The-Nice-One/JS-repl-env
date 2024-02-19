@@ -21,6 +21,20 @@ const FAILED = 0;
 const CONFIG_IGNORE = 0;
 const CONFIG_USE = 1;
 
+
+const OPERATOR_ANCHORS = {
+    "island": {
+        "8": {
+            "*":"integer_multiply",
+            "/": "integer_divide"
+        },
+        "9": {
+            "+": "integer_add",
+            "-": "integer_subtract"
+        }
+    }
+}
+
 class Slice {
     constructor(type, slice, config) {
         this.type = type;
@@ -169,15 +183,40 @@ function compile_expression(slices) {
         }
     }
 
+    compile_island_operator(SCALE_OPERATOR, cells, slices, current_cres_pos);
+    compile_island_operator(TRANSLATE_OPERATOR, cells, slices, current_cres_pos)
 
+    return cells;
+}
+
+
+    /*
+
+    -----------[error::logic::002]----------------
+    ☐ Expected a "int", found an "opt"
+    ☐ Found on line 1, character 5, of main.azl
+        1 | 3 + - 2
+                ^--- cause of error
+
+
+    */
+
+
+
+
+function compile_island_operator(opt_set, cells, slices, current_cres_pos) {
     for(var k = 0; k < slices.length; k++) {
         let slice = slices[k];
-        if (slice.type == SCALE_OPERATOR) {
+        if (slice.type == opt_set) {
             console.log("ye")
             let func_name = NaN;
-            if(slice.slice=="*") { func_name = "integer_multiply"; }
-            if(slice.slice=="/") { func_name = "integer_divide"; }
-
+            let scope = OPERATOR_ANCHORS["island"][opt_set]
+            for(var j=0; j<Object.keys(scope).length; j++) {
+                console.log(Object.keys(scope)[j]);
+                if(slice.slice == Object.keys(scope)[j]) {
+                    func_name = scope[Object.keys(scope)[j]]
+                }
+            }
 
             let val1 = {"locs":NaN, "slice":NaN};
             if(slices[k-1].type == COMPILED_EXPRESSION) {
@@ -208,67 +247,7 @@ function compile_expression(slices) {
             )
             slices[k+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
             slices.splice(k-1,2);
-            k--;
-            k--;
-            console.log(k)
+            k-=2;
         }
     }
-    for(var j = 0; j < slices.length; j++) {
-        let slice = slices[j];
-        if (slice.type == TRANSLATE_OPERATOR) {
-
-            let func_name = NaN;
-            if(slice.slice=="+") { func_name = "integer_add"; }
-            if(slice.slice=="-") { func_name = "integer_subtract"; }
-
-
-            let val1 = {"locs":NaN, "slice":NaN};
-            if(slices[j-1].type == COMPILED_EXPRESSION) {
-                val1.locs = ARG_PASSED;
-                val1.slice = slices[j-1].slice;
-            } else if(slices[j-1].type == INTEGER) {
-                
-                val1.locs = ARG_GIVEN;
-                val1.slice = slices[j-1].slice;
-            }
-            
-            let val2 = {"locs":NaN, "slice":NaN};
-            if(slices[j+1].type == COMPILED_EXPRESSION) {
-                val2.locs = ARG_PASSED;
-                val2.slice = slices[j+1].slice;
-            } else if(slices[j+1].type == INTEGER) {
-                
-                val2.locs = ARG_GIVEN;
-                val2.slice = slices[j+1].slice;
-            }
-
-            cells.push(
-                FUNS["arithmetic"][func_name].bind(
-                    this,
-                    session,
-                    [val1.slice, val2.slice, NaN],
-                    [val1.locs, val2.locs, ARG_GIVEN],
-                    true
-                )
-            )
-            slices[j+1] = new Slice(COMPILED_EXPRESSION, current_cres_pos, CONFIG_IGNORE);
-            slices.splice(j-1,2);
-            j--;
-            j--;
-        }
-    }
-
-    return cells;
 }
-
-
-    /*
-
-    -----------[error::logic::002]----------------
-    ☐ Expected a "int", found an "opt"
-    ☐ Found on line 1, character 5, of main.azl
-        1 | 3 + - 2
-                ^--- cause of error
-
-
-    */
